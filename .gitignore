@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+venv/
+.venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment and Secrets
+.env
+.env.local
+.env.*.local
+
+# Databases and Uploads
+*.db
+*.sqlite
+*.sqlite3
+dev.db
+manganex_ai_demo.db
+uploads/
+
+# Build Outputs
+dist/
+build/
+
+# IDE and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
