@@ -23,6 +23,7 @@ project_root = os.path.abspath(os.path.join(current_dir, '..', '..'))
 sys.path.append(project_root)
 
 from app.config import settings
+config.set_main_option('sqlalchemy.url', settings.DATABASE_URL)
 from app.models import *  # noqa: F401,F403
 from app.database import Base
 
