@@ -344,3 +344,4 @@ Domain: Mining / Geosciences / Earth Observation
 ---
 
 *Built with ❤️ using React, FastAPI, MapLibre GL, and Recharts.*
+# Deploy trigger
