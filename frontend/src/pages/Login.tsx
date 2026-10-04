@@ -18,7 +18,7 @@ export default function Login() {
     setError('');
     setIsSubmitting(true);
 
-    const success = await login(email);
+    const success = await login(email, password);
 
     if (success) {
       navigate('/app/dashboard', { replace: true });
@@ -37,7 +37,7 @@ export default function Login() {
     setEmail(demoEmail);
     setPassword('demo123');
 
-    const success = await login(demoEmail);
+    const success = await login(demoEmail, 'demo123');
 
     if (success) {
       navigate('/app/dashboard', { replace: true });

@@ -25,8 +25,8 @@ from typing import Optional
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from sqlalchemy.orm import Session
 
-from app.database import get_db
-from app.models.upload_record import UploadRecord
+from ..database import get_db
+from ..models.upload_record import UploadRecord
 
 router = APIRouter()
 

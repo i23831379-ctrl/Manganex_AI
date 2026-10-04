@@ -3,7 +3,7 @@ import axios from 'axios';
 // Base URL read from VITE_API_URL or defaults to relative /api
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
-const apiClient = axios.create({
+export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
@@ -31,7 +31,13 @@ export interface ExplorationTarget {
   created_at: string;
   updated_at: string;
 }
-
+export interface FeatureDefinition {
+  feature_id: string;
+  name: string;
+  category: string;
+  required_bands: string[];
+  description?: string;
+}
 export interface ShapFeature {
   feature_name: string;
   feature_value: number;
@@ -48,6 +54,16 @@ export interface PredictionResponse {
   model_version: string;
 }
 
+// Model status response interface
+export interface ModelStatus {
+  mineral: string;
+  status: string;
+  metrics?: Record<string, unknown> | null;
+  training_date?: string | null;
+  feature_list?: string[];
+  record_count?: number | null;
+}
+
 export const api = {
   // Existing functions...
   // Health check
@@ -60,14 +76,19 @@ export const api = {
     const response = await apiClient.get<ExplorationTarget[]>('/targets');
     return response.data;
   },
-  // Model status
+  // Model status (generic)
+  modelStatus: async () => {
+    const response = await apiClient.get('/manganese/model/status');
+    return response.data;
+  },
+  // Backward compatible alias
   manganeseModelStatus: async () => {
-    const response = await apiClient.get('/ml/model/status');
+    const response = await apiClient.get('/manganese/model/status');
     return response.data;
   },
   // Prospectivity GeoJSON
   prospectivity: async () => {
-    const response = await apiClient.get('/ml/prospectivity');
+    const response = await apiClient.get('/maps/prospectivity');
     return response.data;
   },
   // Prediction POST
@@ -75,21 +96,44 @@ export const api = {
     const response = await apiClient.post('/ml/predict', payload);
     return response.data;
   },
-  // Upload dataset POST (new)
-  uploadDataset: async (file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    const response = await apiClient.post('/data-import/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+  // Satellite search
+  // Remote Sensing
+  getBands: async (payload: any) => {
+    const response = await apiClient.post('/remote-sensing/bands', payload);
+    return response.data;
+  },
+  runPreprocess: async (payload: any) => {
+    const response = await apiClient.post('/remote-sensing/preprocess', payload);
+    return response.data;
+  },
+  // Satellite search
+  searchSatellite: async (payload: any) => {
+    const response = await apiClient.post('/satellite/search', payload);
     return response.data;
   },
   // Upload data POST (legacy ML endpoint)
   uploadData: async (payload: { csv_text: string }) => {
     const response = await apiClient.post('/ml/upload-data', payload);
     return response.data;
-  }
+  },
 };
+
+// Feature Engineering API
+export const featuresApi = {
+  catalog: async (): Promise<FeatureDefinition[]> => {
+    const response = await apiClient.get<FeatureDefinition[]>('/features/catalog');
+    return response.data;
+  },
+  calculate: async (payload: any): Promise<any> => {
+    const response = await apiClient.post('/features/calculate', payload);
+    return response.data;
+  },
+  fuse: async (payload: any): Promise<any> => {
+    const response = await apiClient.post('/features/fuse', payload);
+    return response.data;
+  },
+};
+
 
 export const targetsApi = {
   getAll: api.targets,
@@ -108,14 +152,31 @@ export const targetsApi = {
 };
 
 export const mlApi = {
+  // Predict manganese prospectivity for a single location
   predict: async (latitude: number, longitude: number) => {
     const response = await apiClient.post<PredictionResponse>('/ml/predict', { latitude, longitude });
     return response.data;
   },
+  // Retrieve manganese prospectivity collection (GeoJSON)
+  manganeseProspectivity: async () => {
+    const response = await apiClient.get('/manganese/prospectivity');
+    return response.data;
+  },
+  // Retrieve map-wide prospectivity GeoJSON
+  prospectivity: async () => {
+    const response = await apiClient.get('/maps/prospectivity');
+    return response.data;
+  },
+  // Model status endpoint
+  manganeseModelStatus: async () => {
+    const response = await apiClient.get('/manganese/model/status');
+    return response.data;
+  },
+  // Explanation for a specific target (SHAP values)
   getExplanation: async (targetId: number) => {
     const response = await apiClient.get<PredictionResponse>(`/ml/target/${targetId}/explanation`);
     return response.data;
-  }
+  },
 };
 
 // Field Notes API

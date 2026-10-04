@@ -27,7 +27,8 @@ router = APIRouter()
 # Absolute path to the backend directory (used to resolve stored file_path values)
 _BACKEND_DIR = Path(__file__).resolve().parents[2]   # backend/
 
-
+from app.models.target import ExplorationTarget
+from app.services.ml_service import ml_predictor
 # ──────────────────────────────────────────────────────────────────────────────
 # Coordinate validation helpers
 # ──────────────────────────────────────────────────────────────────────────────
@@ -326,3 +327,46 @@ def get_layer(layer_id: int, db: Session = Depends(get_db)):
         "render_type": render_type,
         "geojson": geojson,
     }
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Prospectivity endpoint (reuses manganese prospectivity)
+# ──────────────────────────────────────────────────────────────────────────────
+
+@router.get(
+    "/prospectivity",
+    summary="Manganese prospectivity map data",
+)
+def get_prospectivity_map(db: Session = Depends(get_db)):
+    """Return the same GeoJSON FeatureCollection as the manganese prospectivity endpoint.
+    This enables the maps API to serve prospectivity data for GIS front‑ends.
+    """
+    # Duplicate prospectivity logic to avoid circular imports
+    targets = db.query(ExplorationTarget).all()
+    features = []
+    for t in targets:
+        pred = ml_predictor.predict(t.latitude, t.longitude)
+        prob = pred["prospectivity_score"]
+        classification = "VERY_HIGH" if prob > 0.8 else "HIGH" if prob > 0.6 else "MEDIUM" if prob > 0.4 else "LOW"
+        offset = 0.05
+        ring = [
+            [t.longitude - offset, t.latitude - offset],
+            [t.longitude + offset, t.latitude - offset],
+            [t.longitude + offset, t.latitude + offset],
+            [t.longitude - offset, t.latitude + offset],
+            [t.longitude - offset, t.latitude - offset],
+        ]
+        feature = {
+            "type": "Feature",
+            "geometry": {"type": "Polygon", "coordinates": [ring]},
+            "properties": {
+                "target_id": t.id,
+                "mineral": "manganese",
+                "classification": classification,
+                "manganese_probability": prob,
+                "model_status": "demo",
+                "latitude": t.latitude,
+                "longitude": t.longitude,
+            },
+        }
+        features.append(feature)
+    return {"type": "FeatureCollection", "features": features}

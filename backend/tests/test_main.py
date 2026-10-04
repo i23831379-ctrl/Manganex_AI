@@ -19,10 +19,9 @@ from app.database import Base, engine
 
 @pytest.fixture(autouse=True)
 def fresh_tables():
-    """Re-create all tables in a clean state for every test."""
-    Base.metadata.create_all(bind=engine)
+    """No-op fixture: in-memory test DB handled by conftest."""
     yield
-    # Optionally drop after — keep tables to allow inspection if needed
+    # No teardown needed
 
 
 @pytest.fixture

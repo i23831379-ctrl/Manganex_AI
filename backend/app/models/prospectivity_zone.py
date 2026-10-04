@@ -13,4 +13,4 @@ class ProspectivityZone(Base):
     geom = Column(Text, nullable=True)  # Stored as WKT string for SQLite
     project_id = Column(Integer, ForeignKey('projects.id'), nullable=False)
 
-    project = relationship('Project', back_populates='prospectivity_zones')
+    project = relationship('app.models.project.Project', back_populates='prospectivity_zones')

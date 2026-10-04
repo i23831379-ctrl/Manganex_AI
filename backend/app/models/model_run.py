@@ -14,4 +14,4 @@ class ModelRun(Base):
     status = Column(String, nullable=False, default='pending')
     # foreign key to project maybe
     project_id = Column(Integer, ForeignKey('projects.id'), nullable=False)
-    project = relationship('Project', back_populates='model_runs')
+    project = relationship('app.models.project.Project', back_populates='model_runs')

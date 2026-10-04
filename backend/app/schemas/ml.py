@@ -14,3 +14,6 @@ class PredictionResponse(BaseModel):
     base_value: float
     shap_features: List[ShapFeature]
     model_version: str
+
+class ShortfallResponse(BaseModel):
+    shortfall_tons: float

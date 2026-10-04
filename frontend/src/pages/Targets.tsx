@@ -19,7 +19,7 @@ import {
   Cpu
 } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
-import { FieldVerificationModal } from '../components/FieldVerificationModal';
+import { TargetDetailDrawer } from '../components/TargetDetailDrawer';
 import { DataImportModal } from '../components/DataImportModal';
 import { exportCsv, exportHtmlReport } from '../utils/reportExport';
 import { useAuth } from '../context/AuthContext';
@@ -85,10 +85,6 @@ export default function Targets() {
     queryFn: api.targets,
   });
 
-  const verifyMutation = useMutation({
-    mutationFn: (id: number) => targetsApi.verify(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['targets'] }),
-  });
 
   const sorted = useMemo(() => {
     return [...(targets || [])]
@@ -119,46 +115,7 @@ export default function Targets() {
     ? targets.reduce((s, t) => s + t.prospectivity_score, 0) / targets.length
     : 0;
 
-  const handleFieldSubmit = async (noteData: Omit<FieldNote, 'targetId' | 'submittedAt'>) => {
-    if (!selectedTarget) return;
-    
-    // Create field note via backend
-    try {
-      const payload = {
-        target_id: selectedTarget.id,
-        geologist_name: noteData.geologistName,
-        visit_date: noteData.visitDate,
-        rock_sample: noteData.rockSample,
-        access_difficulty: noteData.accessDifficulty,
-        gps_accuracy_m: noteData.gpsAccuracyM,
-        observations: noteData.observations,
-        photo_filename: noteData.photoFilename,
-        confidence_delta: noteData.confidenceDelta,
-        submitted_at: new Date().toISOString(),
-      };
-      const created = await fieldNotesApi.create(payload);
-      const newNote: FieldNote = {
-        targetId: created.target_id,
-        geologistName: created.geologist_name,
-        visitDate: created.visit_date,
-        rockSample: created.rock_sample,
-        accessDifficulty: created.access_difficulty,
-        gpsAccuracyM: created.gps_accuracy_m,
-        observations: created.observations,
-        photoFilename: created.photo_filename,
-        confidenceDelta: created.confidence_delta,
-        submittedAt: created.submitted_at,
-      };
-      setFieldNotes(prev => ({ ...prev, [selectedTarget.id]: newNote }));
-      // Mark target as verified
-      await verifyMutation.mutateAsync(selectedTarget.id);
-      push('success', 'Field Visit Logged', `${selectedTarget.name} has been marked as verified.`);
-    } catch (error) {
-      console.error('Error submitting field note', error);
-      push('error', 'Submission Failed', 'Could not save field note to backend.');
-    }
-    setSelectedTarget(null);
-  };
+
 
   const handleExportCsv = () => exportCsv(sorted, fieldNotes);
   const handleExportReport = () => exportHtmlReport(sorted, fieldNotes);
@@ -407,12 +364,10 @@ export default function Targets() {
       </div>
 
       {selectedTarget && (
-        <FieldVerificationModal
+        <TargetDetailDrawer
           target={selectedTarget}
-          isOpen={true}
+          isOpen={!!selectedTarget}
           onClose={() => setSelectedTarget(null)}
-          onSubmit={handleFieldSubmit}
-          isSubmitting={verifyMutation.isPending}
         />
       )}
 

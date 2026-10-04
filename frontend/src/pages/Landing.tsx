@@ -157,7 +157,7 @@ export default function Landing() {
 
   const handleViewDemo = async () => {
     setIsDemoLoading(true);
-    const success = await login('admin@manganex.ai');
+    const success = await login('admin@manganex.ai', 'demo123');
    if (success) navigate('/app/dashboard', { replace: true });
     else setIsDemoLoading(false);
   };

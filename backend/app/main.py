@@ -1,17 +1,18 @@
 import os, sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+from .auth.router import router as auth_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.config import settings
-from app.database import engine, Base, SessionLocal
-import app.models  # noqa: F401 — registers ALL models with Base before create_all
-from app.models.target import ExplorationTarget
-from app.api.routes import study_areas
-from app.api import targets, ml, field_notes, data_import, maps
+from .config import settings
+from .database import engine, Base, SessionLocal
+from . import models  # noqa: F401 — registers ALL models with Base before create_all
 
-# Create tables for demo (in a real app, use Alembic)
-Base.metadata.create_all(bind=engine)
+from .api.routes import study_areas
+from .api import targets, ml, field_notes, data_import, maps
+from .api.routes import satellite, remote_sensing, features, manganese
+
+# Database tables will be created on startup (after app definition)
 
 def seed_db():
     try:
@@ -31,13 +32,56 @@ def seed_db():
         # with an in-memory DB or a dev.db that needs migration).
         pass
 
-seed_db()
+# seed_db()  # Moved to startup after tables are created
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description="AI-Powered Manganese Prospectivity Mapping API",
     version="1.0.0",
 )
+
+# Create tables on startup (after the FastAPI instance exists)
+@app.on_event("startup")
+def on_startup() -> None:
+    """Create all database tables when the application starts, and seed default data if needed.
+    Skips during tests (TESTING env var)."""
+    import os
+    if os.getenv("TESTING"):
+        return
+    # Create all tables if they don't exist
+    try:
+        Base.metadata.create_all(bind=engine, checkfirst=True)
+    except Exception as e:
+        # Log but continue; during dev may fail if DB locked
+        print(f"Error creating tables: {e}")
+    # Seed initial data after tables are ensured
+    try:
+        seed_db()
+    except Exception as e:
+        print(f"Error seeding database: {e}")
+    # Seed demo users for authentication
+    from app.database import SessionLocal
+    db = SessionLocal()
+    try:
+        from app.models.user import User
+        from app.auth import utils as auth_utils
+        demo_users = [
+            {"email": "admin@manganex.ai", "username": "admin", "role": "admin"},
+            {"email": "geo@manganex.ai", "username": "geologist", "role": "geologist"},
+        ]
+        for du in demo_users:
+            if not db.query(User).filter(User.email == du["email"]).first():
+                hashed = auth_utils.get_password_hash("demo123")
+                new_user = User(
+                    email=du["email"],
+                    username=du["username"],
+                    hashed_password=hashed,
+                    role=du["role"],
+                )
+                db.add(new_user)
+        db.commit()
+    finally:
+        db.close()
 
 # CORS config
 allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
@@ -66,7 +110,12 @@ app.include_router(study_areas.router, prefix="/api/study-areas", tags=["study_a
 app.include_router(field_notes.router, prefix="/api/field-notes", tags=["field_notes"])
 app.include_router(data_import.router, prefix="/api/data-import", tags=["data_import"])
 app.include_router(maps.router, prefix="/api/maps", tags=["maps"])
+app.include_router(satellite.router, prefix="/api/satellite", tags=["satellite"])
+app.include_router(remote_sensing.router, prefix="/api/remote-sensing", tags=["remote-sensing"])
 
+app.include_router(features.router, prefix="/api/features", tags=["features"])
+app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
+app.include_router(manganese.router, prefix="/api/manganese", tags=["manganese"])
 @app.get("/")
 def read_root():
     return {

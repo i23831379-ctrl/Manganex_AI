@@ -14,6 +14,6 @@ class GeochemicalSample(Base):
     collected_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     dataset_id = Column(Integer, ForeignKey('datasets.id'), nullable=False)
     project_id = Column(Integer, ForeignKey('projects.id'), nullable=True)
-    project = relationship('Project', back_populates='geochemical_samples')
+    project = relationship('app.models.project.Project', back_populates='geochemical_samples')
 
     # Relationships can be defined in Dataset model if needed

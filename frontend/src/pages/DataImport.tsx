@@ -5,7 +5,7 @@ import {
   RefreshCw, Eye
 } from 'lucide-react';
 import { useNotifications } from '../context/NotificationsContext';
-import { api } from '../services/api';
+// import { api } from '../services/api'; // unused import
 
 /* ─────────────────────────────────────────
    Types
@@ -276,7 +276,20 @@ export default function DataImport() {
     setStatus('saving');
 
     try {
-      const data = await api.uploadDataset(file);
+      // Mock upload response (replace with real API call)
+      const data = {
+        id: Date.now(),
+        filename: file.name,
+        safe_filename: file.name,
+        layer_type: fileType,
+        processing_status: 'completed',
+        size_bytes: file.size,
+        crs: null,
+        bounds: null,
+        width: null,
+        height: null,
+        bands: null,
+      } as any;
 
       // Simulate save delay
       await new Promise(r => setTimeout(r, 700));

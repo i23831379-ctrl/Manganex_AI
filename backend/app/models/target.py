@@ -24,5 +24,5 @@ class ExplorationTarget(Base):
 
     # Optional foreign key to Project (nullable for demo data)
     project_id = Column(Integer, ForeignKey('projects.id'), nullable=True)
-    project = relationship('Project', back_populates='exploration_targets')
+    project = relationship('app.models.project.Project', back_populates='exploration_targets')
     field_notes = relationship('FieldNote', back_populates='target', cascade='all, delete-orphan')

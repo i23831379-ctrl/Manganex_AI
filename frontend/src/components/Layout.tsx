@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Map, LayoutDashboard, Target, Settings, Menu, X, LogOut, Upload, ClipboardList, FileText } from 'lucide-react';
+import { LayoutDashboard, Target, Settings, Menu, X, LogOut, Upload, ClipboardList, FileText, Database } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { NotificationBell } from './NotificationBell';
@@ -12,7 +12,7 @@ export default function Layout() {
 
   const allNavItems = [
     { name: 'Dashboard', path: '/app/dashboard', icon: LayoutDashboard, roles: ['admin'] },
-    { name: 'Maps',      path: '/app/maps',      icon: Map,             roles: ['admin', 'geologist'] },
+    { name: 'Satellite Search', path: '/app/satellite-screening', icon: Database, roles: ['admin', 'geologist'] },
     { name: 'Targets',   path: '/app/targets',   icon: Target,          roles: ['admin', 'geologist'] },
     { name: 'Field Notes', path: '/app/field-notes', icon: ClipboardList, roles: ['admin', 'geologist'] },
     { name: 'Reports',   path: '/app/reports',   icon: FileText,        roles: ['admin'] },

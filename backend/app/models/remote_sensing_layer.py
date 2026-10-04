@@ -18,4 +18,4 @@ class RemoteSensingLayer(Base):
     project_id = Column(Integer, ForeignKey('projects.id'), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
-    project = relationship('Project', back_populates='remote_sensing_layers')
+    project = relationship('app.models.project.Project', back_populates='remote_sensing_layers')

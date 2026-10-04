@@ -45,4 +45,4 @@ class GeologicalLayer(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    project = relationship('Project', back_populates='geological_layers')
+    project = relationship('app.models.project.Project', back_populates='geological_layers')

@@ -21,5 +21,5 @@ class StudyArea(Base):
     geom = Column(GeometryColumn, nullable=True)
     project_id = Column(Integer, ForeignKey('projects.id'), nullable=False)
 
-    project = relationship('Project', back_populates='study_areas')
+    project = relationship('app.models.project.Project', back_populates='study_areas')
     datasets = relationship('Dataset', back_populates='study_area')

@@ -27,5 +27,5 @@ class Dataset(Base):
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     # Relationships
-    project = relationship('Project', back_populates='datasets')
+    project = relationship('app.models.project.Project', back_populates='datasets')
     study_area = relationship('StudyArea', back_populates='datasets')

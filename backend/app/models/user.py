@@ -6,11 +6,14 @@ from app.database import Base
 class User(Base):
     __tablename__ = "users"
 
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     is_active = Column(Boolean, default=True)
+    hashed_password = Column(String, nullable=False)  # New field for password hash
+    role = Column(String, nullable=False, default='geologist')  # Role column for demo accounts
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     # Relationships
-    projects = relationship("Project", back_populates="owner")
+    projects = relationship('app.models.project.Project', back_populates='owner')

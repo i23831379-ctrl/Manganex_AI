@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
     
     # Database configuration
-    DATABASE_URL: str = "sqlite:///./dev.db"
+    DATABASE_URL: str = "sqlite:///./manganex_ai_demo.db"
     
     # Demo mode flag
     DEMO_MODE: bool = True

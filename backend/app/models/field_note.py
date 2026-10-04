@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Boolean
 from datetime import datetime
 from sqlalchemy.orm import relationship
-from app.database import Base
+from ..database import Base
 
 class FieldNote(Base):
     __tablename__ = "field_notes"
@@ -23,4 +23,4 @@ class FieldNote(Base):
     confidence_delta = Column(Integer, nullable=False)
     submitted_at = Column(DateTime, default=lambda: datetime.utcnow())
 
-    target = relationship('ExplorationTarget', back_populates='field_notes')
+    target = relationship('app.models.target.ExplorationTarget', back_populates='field_notes')

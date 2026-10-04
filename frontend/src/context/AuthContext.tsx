@@ -17,7 +17,7 @@ export interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -34,66 +34,65 @@ export function AuthProvider({
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // On mount, attempt to restore session from stored JWT token
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem('manganex_user');
-
-      if (storedUser) {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-      }
-    } catch (error) {
-      console.error('Failed to load saved user:', error);
-      localStorage.removeItem('manganex_user');
-    } finally {
+    const token = localStorage.getItem('manganex_token');
+    if (token) {
+      // Fetch current user using token
+      fetch(`${process.env.VITE_API_URL || ''}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then(async (res) => {
+          if (!res.ok) throw new Error('Failed to fetch user');
+          return res.json();
+        })
+        .then((data) => {
+          setUser(data);
+          localStorage.setItem('manganex_user', JSON.stringify(data));
+        })
+        .catch((err) => {
+          console.error(err);
+          localStorage.removeItem('manganex_token');
+          localStorage.removeItem('manganex_user');
+        })
+        .finally(() => setIsLoading(false));
+    } else {
       setIsLoading(false);
     }
   }, []);
 
-  const login = async (email: string): Promise<boolean> => {
-    const normalizedEmail = email.trim().toLowerCase();
-
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    let loggedInUser: User | null = null;
-
-    if (normalizedEmail === 'admin@manganex.ai') {
-      loggedInUser = {
-        id: 'u_1',
-        name: 'Dr. Jane Smith',
-        email: 'admin@manganex.ai',
-        role: 'admin',
-        avatar: 'JS',
-      };
-    }
-
-    if (normalizedEmail === 'geo@manganex.ai') {
-      loggedInUser = {
-        id: 'u_2',
-        name: 'Alex Geologist',
-        email: 'geo@manganex.ai',
-        role: 'geologist',
-        avatar: 'AG',
-      };
-    }
-
-    if (!loggedInUser) {
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      const response = await fetch(`${process.env.VITE_API_URL || ''}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!response.ok) return false;
+      const data = await response.json();
+      const token = data.access_token;
+      // Store token securely (localStorage for demo)
+      localStorage.setItem('manganex_token', token);
+      // Fetch user profile
+      const meRes = await fetch(`${process.env.VITE_API_URL || ''}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!meRes.ok) return false;
+      const userData = await meRes.json();
+      setUser(userData);
+      localStorage.setItem('manganex_user', JSON.stringify(userData));
+      return true;
+    } catch (err) {
+      console.error('Login error:', err);
       return false;
     }
-
-    setUser(loggedInUser);
-
-    localStorage.setItem(
-      'manganex_user',
-      JSON.stringify(loggedInUser)
-    );
-
-    return true;
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('manganex_user');
+    localStorage.removeItem('manganex_token');
+    // Optionally navigate to login page handled by caller
   };
 
   return (
