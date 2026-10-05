@@ -48,7 +48,7 @@ export default function FieldNotes() {
   // Form State
   const [formData, setFormData] = useState<FieldNoteData>({
     target_id: 1,
-    geologist_name: user?.name || 'Dr. A. Sharma',
+    geologist_name: user?.username || 'Dr. A. Sharma',
     visit_date: new Date().toISOString().slice(0, 10),
     rock_sample: 'Psilomelane / Pyrolusite matrix',
     access_difficulty: 'moderate',
@@ -75,7 +75,7 @@ export default function FieldNotes() {
       setShowAddModal(false);
       setFormData({
         target_id: targets?.[0]?.id || 1,
-        geologist_name: user?.name || 'Dr. A. Sharma',
+        geologist_name: user?.username || 'Dr. A. Sharma',
         visit_date: new Date().toISOString().slice(0, 10),
         rock_sample: 'Psilomelane / Pyrolusite matrix',
         access_difficulty: 'moderate',
