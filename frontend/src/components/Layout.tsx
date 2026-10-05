@@ -9,6 +9,7 @@ export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const userInitial = user?.username?.charAt(0).toUpperCase() || 'U';
 
   const allNavItems = [
     { name: 'Dashboard', path: '/app/dashboard', icon: LayoutDashboard, roles: ['admin'] },
@@ -30,7 +31,7 @@ export default function Layout() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-900 text-slate-50">
+    <div className="flex h-screen overflow-hidden bg-slate-900 text-slate-50 lg:pl-64">
       {/* Mobile sidebar overlay */}
       {isSidebarOpen && (
         <div
@@ -98,10 +99,10 @@ export default function Layout() {
             <div className="flex items-center justify-between p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
               <div className="flex items-center gap-3 overflow-hidden">
                 <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-xs font-bold shrink-0">
-                  {user.avatar}
+                  {userInitial}
                 </div>
                 <div className="truncate">
-                  <div className="text-sm font-medium text-slate-200 truncate">{user.name}</div>
+                  <div className="text-sm font-medium text-slate-200 truncate">{user.username}</div>
                   <div className="text-xs text-slate-500 capitalize">{user.role}</div>
                 </div>
               </div>
@@ -120,7 +121,7 @@ export default function Layout() {
       {/* Main content */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile top bar */}
-        <header className="h-14 flex items-center justify-between px-4 border-b border-slate-800 lg:hidden shrink-0">
+        <header className="h-14 flex items-center justify-between px-4 border-b border-slate-800 lg:hidden shrink-0 z-50">
           <button
             className="p-2 text-slate-400 hover:text-white rounded-lg"
             onClick={() => setIsSidebarOpen(true)}
@@ -133,7 +134,7 @@ export default function Layout() {
             <NotificationBell />
             {user && (
               <div className="w-7 h-7 rounded-full bg-purple-500 flex items-center justify-center text-xs font-bold">
-                {user.avatar}
+                {userInitial}
               </div>
             )}
           </div>
